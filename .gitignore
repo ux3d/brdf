@@ -15,3 +15,4 @@ Linux-*
 *.vcxproj
 src/brdf/release
 src/brdf/debug
+/main.pro.user.4.10-pre1

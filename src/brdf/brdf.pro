@@ -1,14 +1,6 @@
 TEMPLATE = app
 CONFIG += qt5  #debug
 
-isEmpty(prefix) {
-	prefix = $$system(pf-makevar --absolute root 2>/dev/null)
-}
-isEmpty(prefix) {
-	error("$prefix is undefined. Please pass prefix=<path> to qmake")
-}
-
-DEST = $$prefix
 isEmpty(LIBDIR) {
 	LIBDIR = $$system(pf-makevar lib 2>/dev/null)
 }
