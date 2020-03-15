@@ -16,3 +16,4 @@ Linux-*
 src/brdf/release
 src/brdf/debug
 /main.pro.user.4.10-pre1
+src/build-brdf-Desktop_Qt_5_14_1_MinGW_64_bit-Debug

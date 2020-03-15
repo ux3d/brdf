@@ -43,11 +43,7 @@ SOURCES = \
     Plot3DWidget.cpp \
     LitSphereWidget.cpp \
     SimpleModel.cpp \
-    Paths.cpp \
-    ptex/PtexReader.cpp \
-    ptex/PtexUtils.cpp \
-    ptex/PtexCache.cpp \
-    ptex/PtexHalf.cpp
+    Paths.cpp
 
 
 QT   += widgets opengl

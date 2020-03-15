@@ -55,7 +55,6 @@ infringement.
 #include <QString>
 #include <math.h>
 #include <stdlib.h>
-#include "ptex/Ptexture.h"
 #include "IBLWidget.h"
 #include "SimpleModel.h"
 #include "DGLFrameBuffer.h"
