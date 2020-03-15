@@ -127,7 +127,7 @@ IBLWindow::IBLWindow( ParameterWindow* paramWindow )
     
     setWindowTitle( "Lit Sphere" );
 
-    probeFileDialog =  new QFileDialog(this, "Open Cube Map", "", "Ptex Cube Maps (*.penv *.ptex *.ptx)");
+	probeFileDialog =  new QFileDialog(this, "Open Environment", "", "Panoramic HDR (*.hdr)");
     probeFileDialog->setFileMode(QFileDialog::ExistingFile);
 
     modelFileDialog =  new QFileDialog(this, "Open Model", "", "OBJ files (*.obj)");

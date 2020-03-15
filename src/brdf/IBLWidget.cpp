@@ -65,6 +65,9 @@ infringement.
 #include "Paths.h"
 #include "glerror.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_HDR
+#include "stb/stb_image.h"
 
 // probability textures:
 // R component: PDF
@@ -174,7 +177,7 @@ void IBLWidget::initializeGL()
 
     model = new SimpleModel();
 
-    loadIBL( (getProbesPath() + "beach.penv").c_str() );
+	loadIBL( (getProbesPath() + "pisa.hdr").c_str() );
     loadModel( (getModelsPath() + "sphere.obj").c_str() );
 
     // load the shaders
@@ -584,63 +587,93 @@ void IBLWidget::loadIBL( const char* filename )
 {
     printf( "opening %s... ", filename );
 
-    // try and load it
-    Ptex::String error;
-    PtexTexture* tx = PtexTexture::open(filename, error);
-    if (!tx) {
-        printf( "failed\n");
-        return;
-    }
+	int panoramaWidth = 0;
+	int panoramaHeight = 0;
+	int panoramaChannels = 0;
+	float* data = stbi_loadf(filename, &panoramaWidth, &panoramaHeight, &panoramaChannels, 0);
+	if (!data)
+	{
+		printf( "failed loading\n");
+		return;
+	}
 
     CKGL();
 
-    Ptex::DataType dataType = tx->dataType();
-    int numChannels = tx->numChannels();
-    int numFaces=tx->numFaces();
-    int faceWidth=0, faceHeight=0;
+	if (panoramaChannels != 3)
+	{
+		printf( "invalid number or channels\n");
+		return;
+	}
 
-    if( dataType != Ptex::dt_float || numChannels != 3 || numFaces != 6 )
+	int faceWidth = panoramaWidth / 4;
+	int faceHeight = panoramaHeight / 2;
+
+	if (faceWidth != faceHeight)
+	{
+		printf( "invalid aspect ratio\n");
+		return;
+	}
+
+	envTex.create( faceWidth*6, faceHeight );
+
+	for( int face = 0; face < 6; face++ )
     {
-        printf( "not the right kind\n" );
-        return;
+		glm::vec3 scanVector;
+		color3 c;
+
+		for( int y = 0; y < faceHeight; y++ )
+		{
+			for( int x = 0; x < faceWidth; x++ )
+			{
+				switch (face)
+				{
+					case 0:
+						scanVector.x = +1.0f;
+						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.z = 2.0f * (float)(faceWidth - x) / (float)(faceWidth - 1) - 1.0f;
+					break;
+					case 1:
+						scanVector.x = -1.0f;
+						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.z = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
+					break;
+					case 2:
+						scanVector.x = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
+						scanVector.y = -1.0f;	// TODO: Fix upside down
+						scanVector.z = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+					break;
+					case 3:
+						scanVector.x = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
+						scanVector.y = +1.0f;	// TODO: Fix upside down
+						scanVector.z = 2.0f * (float)(y) / (float)(faceHeight - 1) - 1.0f;
+					break;
+					case 4:
+						scanVector.x = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
+						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.z = +1.0f;
+					break;
+					case 5:
+						scanVector.x = 2.0f * (float)(faceWidth - x) / (float)(faceWidth - 1) - 1.0f;
+						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.z = -1.0f;
+					break;
+				}
+				scanVector = glm::normalize(scanVector);
+
+				float s = 0.5f + 0.5f * atan2f(scanVector.z, scanVector.x) / glm::pi<float>();
+				float t = 1.0f - acosf(scanVector.y) / glm::pi<float>();
+
+				int tx = (int)((float)(panoramaWidth - 1) * s);
+				int ty = (int)((float)(panoramaHeight - 1)  * t);
+
+				float* texel = &(data[panoramaWidth * panoramaChannels * ty + panoramaChannels * tx]);
+				c = color3(texel[0], texel[1], texel[2]);
+
+				envTex.setPixel( faceWidth*face + x, y, c );
+			}
+		}
     }
-
-    for( int i = 0; i < numFaces; i++ )
-    {
-        int face = i;
-
-
-        Ptex::Res res = tx->getFaceInfo(i).res;
-        if( i == 0 )
-        {
-            faceWidth = res.u();
-            faceHeight = res.v();
-
-            // printf( "size: %dx%d    (%dx%d)\n", faceWidth, faceHeight, faceWidth*6, faceHeight );
-
-            envTex.create( faceWidth*6, faceHeight );
-        }
-
-        if( faceWidth != res.u() || faceHeight != res.v() )
-        {
-            printf( "error loading ptex file\n" );
-            return;
-        }
-
-        float* faceData = (float*)malloc( faceWidth*faceHeight*numChannels*sizeof(float) );
-        tx->getData( i, faceData, 0 );
-
-        // copy the data into the envmap texture
-        for( int j = 0; j < faceHeight * faceWidth; j++ )
-        {
-            color3 c( faceData[j*3+0], faceData[j*3+1], faceData[j*3+2] );
-            envTex.setPixel( faceWidth*face + j % faceWidth, j / faceWidth, c );
-        }
-
-        free( faceData );
-
-    }
-    tx->release();
+	free(data);
     printf( "success\n");
 
     // allocate texture names (if we haven't before)
