@@ -627,41 +627,41 @@ void IBLWidget::loadIBL( const char* filename )
 			{
 				switch (face)
 				{
-					case 0:
+					case 0: // +X
 						scanVector.x = +1.0f;
-						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.y = 2.0f * (float)(y) / (float)(faceHeight - 1) - 1.0f;
 						scanVector.z = 2.0f * (float)(faceWidth - x) / (float)(faceWidth - 1) - 1.0f;
 					break;
-					case 1:
+					case 1: // -X
 						scanVector.x = -1.0f;
-						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.y = 2.0f * (float)(y) / (float)(faceHeight - 1) - 1.0f;
 						scanVector.z = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
 					break;
-					case 2:
+					case 2: // +Y
 						scanVector.x = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
-						scanVector.y = -1.0f;	// TODO: Fix upside down
+						scanVector.y = +1.0f;
 						scanVector.z = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
 					break;
-					case 3:
+					case 3: // -Y
 						scanVector.x = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
-						scanVector.y = +1.0f;	// TODO: Fix upside down
+						scanVector.y = -1.0f;
 						scanVector.z = 2.0f * (float)(y) / (float)(faceHeight - 1) - 1.0f;
 					break;
-					case 4:
+					case 4: // +Z
 						scanVector.x = 2.0f * (float)(x) / (float)(faceWidth - 1) - 1.0f;
-						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.y = 2.0f * (float)(y) / (float)(faceHeight - 1) - 1.0f;
 						scanVector.z = +1.0f;
 					break;
-					case 5:
+					case 5: // -Z
 						scanVector.x = 2.0f * (float)(faceWidth - x) / (float)(faceWidth - 1) - 1.0f;
-						scanVector.y = 2.0f * (float)(faceHeight - y) / (float)(faceHeight - 1) - 1.0f;
+						scanVector.y = 2.0f * (float)(y) / (float)(faceHeight - 1) - 1.0f;
 						scanVector.z = -1.0f;
 					break;
 				}
 				scanVector = glm::normalize(scanVector);
 
 				float s = 0.5f + 0.5f * atan2f(scanVector.z, scanVector.x) / glm::pi<float>();
-				float t = 1.0f - acosf(scanVector.y) / glm::pi<float>();
+				float t = acosf(scanVector.y) / glm::pi<float>();
 
 				int tx = (int)((float)(panoramaWidth - 1) * s);
 				int ty = (int)((float)(panoramaHeight - 1)  * t);
