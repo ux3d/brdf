@@ -99,8 +99,8 @@ IBLWidget::IBLWidget(QWidget *parent, std::vector<brdfPackage> bList )
     inTheta = 0.785398163;
     inPhi = 0.785398163;
 
-    stepSize = 271;
-    totalSamples = stepSize * 15;//500
+	stepSize = 271;
+	totalSamples = stepSize * 15;//500
     randomizeSampleGroupOrder();
 
     updateTimer = new QTimer(this);
