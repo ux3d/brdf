@@ -74,6 +74,8 @@ bool checkTeapot()
 
 int main(int argc, char *argv[])
 {
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
     QApplication app(argc, argv);
     setlocale(LC_NUMERIC,"C");
 
